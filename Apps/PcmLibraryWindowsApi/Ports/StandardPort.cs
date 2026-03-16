@@ -92,7 +92,7 @@ namespace PcmHacking
         private async void Receiver()
         {
             byte[] buffer = new byte[100];
-            while(this.port != null)
+            while (this.port != null)
             {
                 try
                 {
@@ -102,7 +102,7 @@ namespace PcmHacking
                         this.dataReceived(buffer, bytesReceived);
                     }
                 }
-                catch(Exception exception)
+                catch (Exception exception)
                 {
                     if (exception is ObjectDisposedException)
                     {
@@ -143,10 +143,15 @@ namespace PcmHacking
         /// </summary>
         Task<int> IPort.Receive(byte[] buffer, int offset, int count)
         {
-            return PcmHacking.TimeoutUtilities.TaskWithTimeoutAndFallback(
-                this.port.BaseStream.ReadAsync(buffer, offset, count),
-                TimeSpan.FromMilliseconds(this.port.ReadTimeout),
-                () => 0);
+            try
+            {
+                return TimeoutUtilities.TaskWithTimeoutAndException(this.port.BaseStream.ReadAsync(buffer, offset, count),
+                TimeSpan.FromMilliseconds(this.port.ReadTimeout));
+            }
+            catch (TimeoutException)
+            {
+                return Task.FromResult(0);
+            }
         }
 
         /// <summary>
