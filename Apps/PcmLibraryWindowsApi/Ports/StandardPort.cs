@@ -145,7 +145,7 @@ namespace PcmHacking
         {
             try
             {
-                return TimeoutUtilities.TaskWithTimeoutAndException(this.port.BaseStream.ReadAsync(buffer, offset, count),
+                return TimeoutUtilities.TaskWithTimeoutAndException(Task.Run(() => this.port.Read(buffer, offset, count)),
                 TimeSpan.FromMilliseconds(this.port.ReadTimeout));
             }
             catch (TimeoutException)
