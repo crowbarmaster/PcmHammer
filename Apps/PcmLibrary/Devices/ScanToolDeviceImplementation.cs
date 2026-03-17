@@ -143,7 +143,7 @@ namespace PcmHacking
                         break;
 
                     case TimeoutScenario.WriteMemoryBlock:
-                        milliseconds = 140; // 125 works, added some for safety
+                        milliseconds = 250; // 125 works, added some for safety. * Crowbarmaster: OBDLink MX+ was timing out, had to increase it.
                         break;
 
                     case TimeoutScenario.SendKernel:
