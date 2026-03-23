@@ -58,15 +58,18 @@ namespace PcmHacking
                 this.port.Dispose();
             }
             SerialPortConfiguration config = configuration as SerialPortConfiguration;
-            this.port = new SerialPort(this.name);
-            this.port.BaudRate = config.BaudRate;
-            this.port.DataBits = 8;
-            this.port.Parity = Parity.None;
-            this.port.StopBits = StopBits.One;
-            this.port.ReadBufferSize = 12000;
-            this.port.WriteBufferSize = 12000;
+            this.port = new SerialPort(this.name)
+            {
+                BaudRate = config.BaudRate,
+                DataBits = 8,
+                Parity = Parity.None,
+                StopBits = StopBits.One,
+                ReadBufferSize = 12000,
+                WriteBufferSize = 12000
+            };
             if (config.Timeout == 0) config.Timeout = 1000; // default to 1 second but allow override.
             this.port.ReadTimeout = config.Timeout;
+            this.port.WriteTimeout = config.Timeout;
 
             if (this.port.IsOpen == true) this.port.Close();
 
@@ -79,6 +82,7 @@ namespace PcmHacking
             // BaseStream.ReadAsync will hang indefinitely. It turns out that you have 
             // to implement the timeout yourself if you use the async approach.
             this.port.BaseStream.ReadTimeout = this.port.ReadTimeout;
+            this.port.BaseStream.WriteTimeout = this.port.WriteTimeout;
 
             if (config.DataReceived != null)
             {
