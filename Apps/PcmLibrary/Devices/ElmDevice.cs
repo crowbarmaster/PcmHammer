@@ -131,7 +131,7 @@ namespace PcmHacking
         /// </summary>
         public override async Task<TimeoutScenario> SetTimeout(TimeoutScenario scenario)
         {
-            if (this.currentTimeoutScenario == scenario)
+            if (this.currentTimeoutScenario == scenario || this.implementation == null)
             {
                 return this.currentTimeoutScenario;
             }
@@ -173,6 +173,10 @@ namespace PcmHacking
         /// </summary>
         public override async Task<bool> SendMessage(Message message)
         {
+            if(this.implementation == null)
+            {
+                return false;
+            }
             return await this.implementation.SendMessage(message);
         }
 
@@ -182,6 +186,10 @@ namespace PcmHacking
         /// <returns></returns>
         protected override async Task Receive()
         {
+            if (this.implementation == null)
+            {
+                return;
+            }
             await this.implementation.Receive();
         }
 
@@ -193,6 +201,10 @@ namespace PcmHacking
         /// </remarks>
         protected override async Task<bool> SetVpwSpeedInternal(VpwSpeed newSpeed)
         {
+            if (this.implementation == null)
+            {
+                return false;
+            }
             if (newSpeed == VpwSpeed.Standard)
             {
                 this.Logger.AddDebugMessage("AllPro setting VPW 1X");
