@@ -85,7 +85,7 @@ namespace PcmHacking
         {
             try
             {
-            return await Task.FromResult(this.InitializeInternal());
+                return await Task.FromResult(this.InitializeInternal());
             } catch (NullReferenceException)
             {
                 return false;
@@ -373,6 +373,7 @@ namespace PcmHacking
                     // Big problems, do something here
                 }
                 IsJ2534Open = false;
+                CloseLibrary();
                 }
             return Response.Create(ResponseStatus.Success, OBDError);
         }
