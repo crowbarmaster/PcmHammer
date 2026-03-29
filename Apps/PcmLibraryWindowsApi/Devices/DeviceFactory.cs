@@ -1,3 +1,4 @@
+using InTheHand.Net.Sockets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +49,12 @@ namespace PcmHacking
                 if (string.Equals(MockPort.PortName, serialPortName))
                 {
                     port = new MockPort(logger);
+                }
+                if (serialPortName.EndsWith("(BT)"))
+                {
+                    string portName = serialPortName.Substring(0, serialPortName.Length - 4);
+                    BluetoothDeviceInfo btInfo = SerialBluetoothDiscovery.GatherPairedDevices().FirstOrDefault(x => x.DeviceName == portName);
+                    port = new BluetoothPort(btInfo);
                 }
                 else if (string.Equals(HttpPort.PortName, serialPortName))
                 {
