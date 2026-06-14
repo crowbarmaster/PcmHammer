@@ -37,10 +37,10 @@ namespace PcmHacking
 
         /// <summary>
         /// How long to wait for a PCM security time-delay lockout (response 0x37) to clear before
-        /// re-requesting a seed during an unlock. Sized to cover one ~10s forced-delay window plus a
-        /// small margin.
+        /// re-requesting a seed during an unlock. Sized to cover one ~15s forced-delay window plus a
+        /// small margin. Testing shows a P01 in lockout requires at least 15 seconds from power on time.
         /// </summary>
-        private static readonly TimeSpan SecurityDelayLockout = TimeSpan.FromSeconds(11);
+        private static readonly TimeSpan SecurityDelayLockout = TimeSpan.FromSeconds(16);
 
         public CancellationTokenSource ShutdownSignalSource = new CancellationTokenSource(); // Use this as a trigger to say we are ready to dispose the underlying device.
 
@@ -401,17 +401,23 @@ namespace PcmHacking
                             return false;
                         }
 
-                        // Normal: the PCM rate-limits security access and is counting down a forced delay.
-                        // Wait it out and re-request the seed once so the unlock can still succeed. (Note:
-                        // probing security during the power-on lockout can leave some PCMs refusing the
-                        // kernel upload for the rest of the power cycle - that case is handled where the
-                        // upload-permission request is rejected, not here.) Don't charge this against the
-                        // send-attempt budget.
-                        lockoutRetried = true;
-                        sendAttempt--;
-                        logger.AddUserMessage("PCM is in a security time-delay lockout. Waiting to retry.");
-                        await Task.Delay(SecurityDelayLockout);
+                    // Normal: the PCM rate-limits security access and is counting down a forced delay.
+                    // Wait it out and re-request the seed once so the unlock can still succeed. (Note:
+                    // probing security during the power-on lockout can leave some PCMs refusing the
+                    // kernel upload for the rest of the power cycle - that case is handled where the
+                    // upload-permission request is rejected, not here.) Don't charge this against the
+                    // send-attempt budget.
+                    lockoutRetried = true;
+                    sendAttempt--;
+                    int secondsLeft = (int)SecurityDelayLockout.TotalSeconds;
+                    logger.AddUserMessage($"PCM is in a security time-delay lockout. Waiting {secondsLeft} seconds before re-attempting unlock.");
+                    while(secondsLeft > 0)
+                    {
+                        logger.AddUserMessage($"{secondsLeft}...");
+                        await Task.Delay(1000);
+                        secondsLeft--;
                     }
+                }
 
                     // No usable seed this round; clear anything stale and let the loop resend.
                     this.device.ClearMessageQueue();
